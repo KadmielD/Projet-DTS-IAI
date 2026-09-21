@@ -1,43 +1,85 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  mockActivities,
-  mockCultures,
-  mockExploitations,
-  mockPredictions,
-} from "@/api/mock";
+  getActivities,
+  getCultures,
+  getExploitations,
+  getNotifications,
+  getPredictions,
+} from "@/api/services";
+import type {
+  Activity,
+  AppNotification,
+  Culture,
+  Exploitation,
+  Prediction,
+} from "@/types";
 import { Badge, Button, Card, KpiCard, PageHeader } from "@/components/ui";
 
 export default function DashboardPage() {
-  const activeCultures = mockCultures.filter((c) => c.status === "en_cours");
-  const nextActivity = mockActivities[1];
-  const prediction = mockPredictions[0];
-  const farm = mockExploitations[0];
+  const [farms, setFarms] = useState<Exploitation[]>([]);
+  const [cultures, setCultures] = useState<Culture[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
+  const [alerts, setAlerts] = useState<AppNotification[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      getExploitations(),
+      getCultures(),
+      getActivities(),
+      getPredictions(),
+      getNotifications(),
+    ]).then(([f, c, a, p, n]) => {
+      setFarms(f);
+      setCultures(c);
+      setActivities(a);
+      setPrediction(p[0] ?? null);
+      setAlerts(n.filter((x) => !x.read));
+    });
+  }, []);
+
+  const activeCultures = cultures.filter((c) => c.status === "en_cours");
+  const nextActivity = activities[1] ?? activities[0];
+  const farm = farms[0];
 
   return (
     <div>
       <PageHeader
         title="Tableau de bord"
-        subtitle="Vue d'ensemble de vos exploitations et activités"
+        subtitle="Vue d'ensemble de vos exploitations et activites"
+        actions={
+          <Link to="/app/notifications">
+            <Button variant="outline">
+              Notifications
+              {alerts.length > 0 ? ` (${alerts.length})` : ""}
+            </Button>
+          </Link>
+        }
       />
 
-      <div className="mb-6 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
-        <span className="font-semibold text-warning">Attention :</span>{" "}
-        Irrigation prévue le 12 Mai — Parcelle Bambui. Préparez l&apos;eau et
-        les équipements.
-      </div>
+      {alerts[0] ? (
+        <div className="mb-6 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
+          <span className="font-semibold text-warning">{alerts[0].title} :</span>{" "}
+          {alerts[0].message}{" "}
+          <Link to="/app/notifications" className="font-semibold text-primary">
+            Voir tout
+          </Link>
+        </div>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Exploitations" value={mockExploitations.length} />
+        <KpiCard label="Exploitations" value={farms.length} />
         <KpiCard label="Cultures en cours" value={activeCultures.length} />
         <KpiCard
-          label="Prochaine activité"
-          value="Irrigation"
+          label="Prochaine activite"
+          value={nextActivity ? "Irrigation" : "—"}
           hint={nextActivity?.date}
         />
         <KpiCard
-          label="Récolte prédite"
-          value={`${prediction.yieldPredicted} t/ha`}
-          hint={`${prediction.confidence}% confiance`}
+          label="Recolte predite"
+          value={prediction ? `${prediction.yieldPredicted} t/ha` : "—"}
+          hint={prediction ? `${prediction.confidence}% confiance` : undefined}
         />
       </div>
 
@@ -46,26 +88,28 @@ export default function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-lg font-semibold">
-                Aperçu de l&apos;exploitation
+                Apercu de l'exploitation
               </h2>
-              <p className="mt-1 text-sm text-muted">{farm.location}</p>
+              <p className="mt-1 text-sm text-muted">{farm?.location}</p>
             </div>
             <Link to="/app/exploitations">
-              <Button variant="outline">Voir détails</Button>
+              <Button variant="outline">Voir details</Button>
             </Link>
           </div>
           <div className="mt-4 overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-accent/10 p-6">
-            <p className="text-2xl font-bold text-primary">{farm.name}</p>
+            <p className="text-2xl font-bold text-primary">
+              {farm?.name ?? "—"}
+            </p>
             <p className="mt-2 text-sm text-foreground/80">
-              {farm.areaHa} ha · {farm.description}
+              {farm ? `${farm.areaHa} ha · ${farm.description}` : ""}
             </p>
           </div>
         </Card>
 
         <Card className="lg:col-span-2">
-          <h2 className="text-lg font-semibold">Activités récentes</h2>
+          <h2 className="text-lg font-semibold">Activites recentes</h2>
           <ul className="mt-4 space-y-3">
-            {mockActivities.slice(0, 5).map((a) => (
+            {activities.slice(0, 5).map((a) => (
               <li key={a.id} className="flex items-start gap-3">
                 <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                 <div>
@@ -79,32 +123,32 @@ export default function DashboardPage() {
             to="/app/historique"
             className="mt-4 inline-block text-sm font-semibold text-primary"
           >
-            Voir l&apos;historique →
+            Voir l'historique →
           </Link>
         </Card>
       </div>
 
       <div className="mt-6">
-        <h2 className="mb-3 text-lg font-semibold">Accès rapides</h2>
+        <h2 className="mb-3 text-lg font-semibold">Acces rapides</h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {[
             {
-              to: "/app/diagnostic",
+              href: "/app/diagnostic",
               title: "Diagnostic IA",
-              desc: "Analyser une plante malade",
+              desc: "Importer photo + recommandations",
             },
             {
-              to: "/app/analyse-sol",
+              href: "/app/analyse-sol",
               title: "Analyse sol",
-              desc: "pH, NPK et recommandations",
+              desc: "Photo, pH, NPK et recommandations",
             },
             {
-              to: "/app/planification",
+              href: "/app/planification",
               title: "Planification",
-              desc: "Calendrier cultural",
+              desc: "Calendrier + meteo + predictions",
             },
           ].map((item) => (
-            <Link key={item.to} to={item.to}>
+            <Link key={item.href} to={item.href}>
               <Card className="h-full transition-shadow hover:shadow-md">
                 <p className="font-semibold text-primary">{item.title}</p>
                 <p className="mt-1 text-sm text-muted">{item.desc}</p>

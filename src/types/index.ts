@@ -18,6 +18,8 @@ export interface Exploitation {
   areaHa: number;
   image?: string;
   description?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export type CultureStatus = "en_cours" | "planifiee" | "recoltee";
@@ -34,7 +36,13 @@ export interface Culture {
 
 export interface Activity {
   id: string;
-  type: "semis" | "irrigation" | "diagnostic" | "analyse_sol" | "traitement" | "prediction";
+  type:
+    | "semis"
+    | "irrigation"
+    | "diagnostic"
+    | "analyse_sol"
+    | "traitement"
+    | "prediction";
   title: string;
   date: string;
   exploitationId?: string;
@@ -50,6 +58,7 @@ export interface SoilAnalysis {
   potassium: number;
   humidity: number;
   recommendations: string[];
+  photoName?: string;
 }
 
 export interface Prediction {
@@ -74,4 +83,35 @@ export interface PlatformSettings {
     planning: boolean;
   };
   legalNotice: string;
+}
+
+export type NotificationType = "alerte" | "info" | "succes" | "meteo";
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  date: string;
+  read: boolean;
+  href?: string;
+}
+
+export interface DiagnosticResult {
+  id: string;
+  disease: string;
+  severity: "faible" | "moyen" | "eleve";
+  confidence: number;
+  recommendations: string[];
+  photoName?: string;
+  createdAt: string;
+}
+
+export interface WeatherDay {
+  date: string;
+  label: string;
+  tempMax: number;
+  tempMin: number;
+  precipMm: number;
+  condition: "soleil" | "nuage" | "pluie";
 }

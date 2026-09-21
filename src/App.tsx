@@ -12,6 +12,7 @@ import DiagnosticPage from "@/pages/farmer/DiagnosticPage";
 import PredictionsPage from "@/pages/farmer/PredictionsPage";
 import AnalyseSolPage from "@/pages/farmer/AnalyseSolPage";
 import HistoriquePage from "@/pages/farmer/HistoriquePage";
+import NotificationsPage from "@/pages/farmer/NotificationsPage";
 import ProfilPage from "@/pages/farmer/ProfilPage";
 import AdminDashboardPage from "@/pages/admin/DashboardPage";
 import UtilisateursPage from "@/pages/admin/UtilisateursPage";
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="diagnostic" element={<DiagnosticPage />} />
           <Route path="predictions" element={<PredictionsPage />} />
           <Route path="analyse-sol" element={<AnalyseSolPage />} />
+          <Route path="notifications" element={<NotificationsPage />} />
           <Route path="historique" element={<HistoriquePage />} />
           <Route path="profil" element={<ProfilPage />} />
         </Route>

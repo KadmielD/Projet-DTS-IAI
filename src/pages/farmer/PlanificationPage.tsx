@@ -1,15 +1,45 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { mockPlanning, planningMonths } from "@/api/mock";
+import { getWeatherForecast } from "@/api/services";
+import type { WeatherDay } from "@/types";
+import { WeatherStrip } from "@/components/Feedback";
 import { Button, Card, PageHeader } from "@/components/ui";
 
 export default function PlanificationPage() {
+  const [weather, setWeather] = useState<WeatherDay[]>([]);
+
+  useEffect(() => {
+    getWeatherForecast().then(setWeather);
+  }, []);
+
   return (
     <div>
       <PageHeader
-        title="Planification"
-        subtitle="Calendrier cultural Mai — Octobre"
-        actions={<Button>+ Ajouter une culture</Button>}
+        title="Planifier les cultures"
+        subtitle="Calendrier cultural + meteo (Open-Meteo a brancher)"
+        actions={
+          <div className="flex gap-2">
+            <Link to="/app/predictions">
+              <Button variant="outline">Voir predictions</Button>
+            </Link>
+            <Link to="/app/cultures">
+              <Button>+ Ajouter une culture</Button>
+            </Link>
+          </div>
+        }
       />
+
+      <Card className="mb-6">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="font-semibold">Previsions meteo (5 jours)</h2>
+          <span className="text-xs text-muted">Source: mock → Open-Meteo</span>
+        </div>
+        <WeatherStrip days={weather} />
+      </Card>
+
       <Card>
+        <h2 className="mb-4 font-semibold">Calendrier Mai — Octobre</h2>
         <div className="mb-4 grid grid-cols-[120px_1fr] gap-2 text-xs font-medium text-muted">
           <div />
           <div className="grid grid-cols-6 gap-1">
@@ -41,8 +71,8 @@ export default function PlanificationPage() {
           ))}
         </div>
         <p className="mt-6 text-sm text-muted">
-          Les barres représentent les périodes de culture prévues. Ajustez les
-          dates depuis la fiche culture.
+          Extension UC : consulter la prediction des recoltes depuis la
+          planification.
         </p>
       </Card>
     </div>

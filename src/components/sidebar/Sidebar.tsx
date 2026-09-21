@@ -87,6 +87,12 @@ export const farmerIcons = {
       <path d="M12 7v5l3 2" />
     </Icon>
   ),
+  notifications: (
+    <Icon>
+      <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
+      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+    </Icon>
+  ),
   profil: (
     <Icon>
       <circle cx="12" cy="8" r="4" />
@@ -214,6 +220,11 @@ export const farmerNav: NavItem[] = [
     icon: farmerIcons.predictions,
   },
   { href: "/app/analyse-sol", label: "Analyse sol", icon: farmerIcons.sol },
+  {
+    href: "/app/notifications",
+    label: "Notifications",
+    icon: farmerIcons.notifications,
+  },
   {
     href: "/app/historique",
     label: "Historique",
