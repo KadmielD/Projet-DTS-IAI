@@ -1,0 +1,10 @@
+{
+  "database_url": "postgresql+psycopg2://agriintelli:agriintelli@localhost:5432/agriintelli",
+  "secret_key": "AGRIINTELLI-SECRET-KEY-CHANGE-ME",
+  "access_token_expire_minutes": 60,
+  "algorithm": "HS256",
+  "cors_origins": [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+  ]
+}

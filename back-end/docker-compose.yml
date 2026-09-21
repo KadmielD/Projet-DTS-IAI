@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: agriintelli-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: agriintelli
+      POSTGRES_PASSWORD: agriintelli
+      POSTGRES_DB: agriintelli
+    ports:
+      - "5432:5432"
+    volumes:
+      - agriintelli_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agriintelli -d agriintelli"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  agriintelli_pgdata:
