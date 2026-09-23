@@ -141,7 +141,7 @@ export function Sidebar({ items, title }: { items: NavItem[]; title: string }) {
   };
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border bg-surface">
+    <aside className="sticky top-0 z-20 flex h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-surface">
       <div className="flex items-center gap-3 border-b border-border px-4 py-4">
         <img src={logo} alt="AgriIntelli" className="h-10 w-10 object-contain" />
         <div>
