@@ -47,6 +47,20 @@ const emptyForm = (exploitationId = ""): CultureForm => ({
   status: "en_cours",
 });
 
+const getCropPhoto = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes("maïs") || n.includes("mais")) {
+    return "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=120&q=80";
+  }
+  if (n.includes("haricot")) {
+    return "https://images.unsplash.com/photo-1551462147-ff29053bfc14?auto=format&fit=crop&w=120&q=80";
+  }
+  if (n.includes("tomate")) {
+    return "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=120&q=80";
+  }
+  return "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=120&q=80";
+};
+
 export default function CulturesPage() {
   const [cultures, setCultures] = useState<Culture[]>([]);
   const [farms, setFarms] = useState<Exploitation[]>([]);
@@ -189,11 +203,16 @@ export default function CulturesPage() {
                         className="hover:bg-surface-subtle/50 transition-colors"
                       >
                         <td className="px-5 py-4 font-bold text-foreground">
-                          <div className="flex items-center gap-2">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-bold">
-                              🌱
-                            </span>
-                            <span>{c.name}</span>
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={getCropPhoto(c.name)}
+                              alt={c.name}
+                              className="h-10 w-10 rounded-xl object-cover border border-emerald-200/80 shadow-xs"
+                            />
+                            <div>
+                              <p className="font-bold text-foreground">{c.name}</p>
+                              <p className="text-[11px] text-muted font-normal">{c.stage}</p>
+                            </div>
                           </div>
                         </td>
                         <td className="px-5 py-4 text-muted text-xs">
@@ -249,15 +268,21 @@ export default function CulturesPage() {
                 .map((c) => (
                   <Card key={c.id} hover className="flex flex-col justify-between">
                     <div>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <Icons.Sprout className="w-4 h-4 text-emerald-800" />
-                          <h4 className="font-bold text-foreground text-sm">{c.name}</h4>
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={getCropPhoto(c.name)}
+                            alt={c.name}
+                            className="h-10 w-10 rounded-xl object-cover border border-emerald-200/80 shadow-xs"
+                          />
+                          <div>
+                            <h4 className="font-bold text-foreground text-sm">{c.name}</h4>
+                            <p className="text-[11px] text-muted">Stade : <strong className="text-foreground">{c.stage}</strong></p>
+                          </div>
                         </div>
                         <Badge tone="success">En cours</Badge>
                       </div>
-                      <p className="text-xs text-muted">Stade actuel : <strong className="text-foreground">{c.stage}</strong></p>
-                      <p className="text-[11px] text-muted mt-1">Du {c.startDate} au {c.endDate}</p>
+                      <p className="text-[11px] text-muted mt-2">Période : {c.startDate} → {c.endDate}</p>
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-border/60 flex justify-end gap-1">

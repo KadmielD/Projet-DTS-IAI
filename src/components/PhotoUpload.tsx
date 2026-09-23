@@ -50,12 +50,10 @@ export function PhotoUpload({
     onChange?.(mockFile, dataSvgUrl);
   };
 
-  // Inline SVG data URLs for sample leaves
-  const sampleMaizeLeaf = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240"><rect width="100%" height="100%" fill="%23064e3b"/><path d="M 40,200 C 140,50 260,30 360,40 C 280,140 180,210 40,200 Z" fill="%2310b981"/><path d="M 80,180 C 160,110 240,70 320,60" stroke="%23f59e0b" stroke-width="4" stroke-linecap="round"/><circle cx="160" cy="120" r="10" fill="%23d97706" opacity="0.8"/><circle cx="210" cy="95" r="8" fill="%23d97706" opacity="0.8"/><circle cx="260" cy="75" r="12" fill="%23b45309" opacity="0.8"/><circle cx="120" cy="150" r="7" fill="%23d97706" opacity="0.8"/><text x="20" y="30" fill="%23ecfdf5" font-size="12" font-weight="bold" font-family="system-ui">Échantillon : Feuille de Maïs (Symptôme de Rouille)</text></svg>`;
-
-  const sampleTomatoLeaf = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240"><rect width="100%" height="100%" fill="%230f172a"/><path d="M 60,180 C 120,40 280,40 340,160 C 260,200 140,200 60,180 Z" fill="%23059669"/><circle cx="150" cy="130" r="14" fill="%2378350f" opacity="0.85"/><circle cx="230" cy="110" r="18" fill="%23451a03" opacity="0.85"/><circle cx="270" cy="140" r="10" fill="%2378350f" opacity="0.85"/><text x="20" y="30" fill="%23ffffff" font-size="12" font-weight="bold" font-family="system-ui">Échantillon : Feuille de Tomate (Taches foliaires)</text></svg>`;
-
-  const sampleSoilSample = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240"><rect width="100%" height="100%" fill="%23451a03"/><path d="M 0,100 Q 100,80 200,110 T 400,90 L 400,240 L 0,240 Z" fill="%2378350f"/><circle cx="120" cy="150" r="16" fill="%2392400e"/><circle cx="280" cy="170" r="22" fill="%23b45309"/><circle cx="200" cy="190" r="12" fill="%2392400e"/><text x="20" y="30" fill="%23fef3c7" font-size="12" font-weight="bold" font-family="system-ui">Échantillon : Carottage de sol limono-argileux</text></svg>`;
+  // Real high-definition agricultural photographs for 1-click test samples
+  const sampleMaizeLeaf = "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80";
+  const sampleTomatoLeaf = "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80";
+  const sampleSoilSample = "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=600&q=80";
 
   return (
     <div className="space-y-4">
