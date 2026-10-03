@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getActivities,
+  getAiStatus,
   getCultures,
+  getDailyTip,
   getExploitations,
   getNotifications,
   getPredictions,
 } from "@/api/services";
 import type {
   Activity,
+  AiStatus,
   AppNotification,
   Culture,
   Exploitation,
@@ -22,8 +25,12 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [alerts, setAlerts] = useState<AppNotification[]>([]);
+  const [dailyTip, setDailyTip] = useState<{ tip: string; culture: string; source: string } | null>(null);
+  const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
 
   useEffect(() => {
+    getAiStatus().then(setAiStatus);
+    getDailyTip("Maïs").then(setDailyTip);
     Promise.all([
       getExploitations(),
       getCultures(),
@@ -47,16 +54,47 @@ export default function DashboardPage() {
     <div>
       <PageHeader
         title="Tableau de bord"
-        subtitle="Vue d'ensemble de vos exploitations et activites"
+        subtitle="Vue d'ensemble de vos exploitations, activités et recommandations IA en temps réel"
         actions={
-          <Link to="/app/notifications">
-            <Button variant="outline">
-              Notifications
-              {alerts.length > 0 ? ` (${alerts.length})` : ""}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {aiStatus?.has_openai_key ? (
+              <Badge tone="success" className="py-1">
+                OpenAI Connecté
+              </Badge>
+            ) : null}
+            <Link to="/app/notifications">
+              <Button variant="outline">
+                Notifications
+                {alerts.length > 0 ? ` (${alerts.length})` : ""}
+              </Button>
+            </Link>
+          </div>
         }
       />
+
+      {dailyTip && (
+        <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-0.5">🌱</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Conseil agronomique du jour (IA)
+                </span>
+                <Badge tone={dailyTip.source === "openai" ? "success" : "info"} className="text-[10px] py-0 px-2">
+                  {dailyTip.source === "openai" ? "OpenAI GPT" : "Agronomie Expert"}
+                </Badge>
+              </div>
+              <p className="mt-1 text-sm text-foreground/90 font-medium">{dailyTip.tip}</p>
+            </div>
+          </div>
+          <Link to="/app/diagnostic" className="shrink-0">
+            <Button size="sm" variant="outline" className="border-primary/40 text-primary hover:bg-primary/10">
+              Diagnostic photo →
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {alerts[0] ? (
         <div className="mb-6 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">

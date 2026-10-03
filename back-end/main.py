@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import models  # noqa: F401 — register SQLAlchemy models
 from database import Base, config, engine
-from routers import activities, admin, auth, cultures, exploitations, predictions, soil_analyses, stats
+from routers import activities, admin, ai, auth, cultures, exploitations, predictions, soil_analyses, stats
 
 Base.metadata.create_all(bind=engine)
 
@@ -29,6 +29,7 @@ app.include_router(activities.router)
 app.include_router(soil_analyses.router)
 app.include_router(predictions.router)
 app.include_router(stats.router)
+app.include_router(ai.router)
 
 
 @app.get("/health")

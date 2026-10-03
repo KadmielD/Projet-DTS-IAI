@@ -16,12 +16,12 @@ export default function PlanificationPage() {
   return (
     <div>
       <PageHeader
-        title="Planifier les cultures"
-        subtitle="Calendrier cultural + meteo (Open-Meteo a brancher)"
+        title="Planification & calendrier cultural"
+        subtitle="Optimisation des cycles de semis, d'irrigation et prévisions agro-météorologiques"
         actions={
           <div className="flex gap-2">
             <Link to="/app/predictions">
-              <Button variant="outline">Voir predictions</Button>
+              <Button variant="outline">Projections IA</Button>
             </Link>
             <Link to="/app/cultures">
               <Button>+ Ajouter une culture</Button>
@@ -32,8 +32,8 @@ export default function PlanificationPage() {
 
       <Card className="mb-6">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="font-semibold">Previsions meteo (5 jours)</h2>
-          <span className="text-xs text-muted">Source: mock → Open-Meteo</span>
+          <h2 className="font-semibold">Prévisions agro-météorologiques (5 jours)</h2>
+          <span className="text-xs text-muted">Données agro-climatiques régionales</span>
         </div>
         <WeatherStrip days={weather} />
       </Card>

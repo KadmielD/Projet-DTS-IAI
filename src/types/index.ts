@@ -59,6 +59,9 @@ export interface SoilAnalysis {
   humidity: number;
   recommendations: string[];
   photoName?: string;
+  fertilityScore?: number;
+  soilQuality?: string;
+  source?: "openai" | "fallback_simulation";
 }
 
 export interface Prediction {
@@ -71,6 +74,8 @@ export interface Prediction {
   months: string[];
   harvestDate: string;
   confidence: number;
+  dailyTip?: string;
+  source?: "openai" | "fallback_simulation";
 }
 
 export interface PlatformSettings {
@@ -105,6 +110,38 @@ export interface DiagnosticResult {
   recommendations: string[];
   photoName?: string;
   createdAt: string;
+  symptoms?: string;
+  source?: "openai" | "fallback_simulation";
+}
+
+export interface AiStatus {
+  status: "configured" | "fallback_mode";
+  has_openai_key: boolean;
+  vision_model: string;
+  text_model: string;
+}
+
+export interface SoilAnalysisAIResponse {
+  ph: number;
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  humidity: number;
+  fertilityScore: number;
+  soilQuality: string;
+  recommendations: string[];
+  source: "openai" | "fallback_simulation";
+}
+
+export interface PredictionAIResponse {
+  cultureName: string;
+  yieldPredicted: number;
+  confidence: number;
+  harvestDate: string;
+  yieldPredictedSeries: number[];
+  yieldObserved: (number | null)[];
+  dailyTip: string;
+  source: "openai" | "fallback_simulation";
 }
 
 export interface WeatherDay {
