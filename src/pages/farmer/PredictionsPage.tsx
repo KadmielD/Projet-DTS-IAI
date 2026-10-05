@@ -80,7 +80,11 @@ export default function PredictionsPage() {
         subtitle="Estimation des rendements agricoles et calendrier prévisionnel par intelligence artificielle"
         actions={
           <div className="flex items-center gap-2">
-            {aiStatus?.has_openai_key ? (
+            {aiStatus?.has_gemini_key ? (
+              <Badge tone="success" className="py-1">
+                Google {aiStatus.text_model}
+              </Badge>
+            ) : aiStatus?.has_openai_key ? (
               <Badge tone="success" className="py-1">
                 OpenAI {aiStatus.text_model}
               </Badge>

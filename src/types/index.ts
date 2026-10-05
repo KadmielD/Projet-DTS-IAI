@@ -111,12 +111,15 @@ export interface DiagnosticResult {
   photoName?: string;
   createdAt: string;
   symptoms?: string;
-  source?: "openai" | "fallback_simulation";
+  source?: string;
 }
 
 export interface AiStatus {
   status: "configured" | "fallback_mode";
-  has_openai_key: boolean;
+  provider?: "gemini" | "openai" | "local_expert";
+  has_api_key?: boolean;
+  has_gemini_key?: boolean;
+  has_openai_key?: boolean;
   vision_model: string;
   text_model: string;
 }
@@ -130,7 +133,7 @@ export interface SoilAnalysisAIResponse {
   fertilityScore: number;
   soilQuality: string;
   recommendations: string[];
-  source: "openai" | "fallback_simulation";
+  source: string;
 }
 
 export interface PredictionAIResponse {

@@ -44,7 +44,12 @@ export default function DiagnosticPage() {
         subtitle="Détection instantanée des pathologies foliaires et recommandations de traitement"
         actions={
           <div className="flex items-center gap-2">
-            {aiStatus?.has_openai_key ? (
+            {aiStatus?.has_gemini_key ? (
+              <Badge tone="success" className="flex items-center gap-1.5 py-1">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                Moteur : Google {aiStatus.vision_model}
+              </Badge>
+            ) : aiStatus?.has_openai_key ? (
               <Badge tone="success" className="flex items-center gap-1.5 py-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 Moteur : OpenAI {aiStatus.vision_model}
@@ -93,9 +98,9 @@ export default function DiagnosticPage() {
             {loading ? "Analyse Vision en cours (inspection des tissus)…" : "Lancer le diagnostic IA"}
           </Button>
 
-          {aiStatus && !aiStatus.has_openai_key && (
+          {aiStatus && !aiStatus.has_api_key && !aiStatus.has_openai_key && !aiStatus.has_gemini_key && (
             <p className="mt-3 text-xs text-muted/80 text-center">
-              💡 Clé OpenAI non détectée : l'analyse bascule automatiquement sur la base agronomique locale haute précision.
+              💡 Clé IA non détectée : l'analyse bascule automatiquement sur la base agronomique locale haute précision.
             </p>
           )}
         </Card>
@@ -104,8 +109,12 @@ export default function DiagnosticPage() {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-foreground">Rapport d'expertise agronomique</h2>
             {result && (
-              <Badge tone={result.source === "openai" ? "success" : "info"}>
-                {result.source === "openai" ? "OpenAI GPT-4o Vision" : "Agronomie Expert (Local)"}
+              <Badge tone={result.source?.includes("gemini") || result.source?.includes("openai") ? "success" : "info"}>
+                {result.source?.includes("gemini")
+                  ? `Google Gemini (${aiStatus?.vision_model || "Vision"})`
+                  : result.source?.includes("openai")
+                    ? "OpenAI GPT-4o Vision"
+                    : "Agronomie Expert (Local)"}
               </Badge>
             )}
           </div>

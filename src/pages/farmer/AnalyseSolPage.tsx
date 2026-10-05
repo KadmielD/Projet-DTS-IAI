@@ -73,7 +73,11 @@ export default function AnalyseSolPage() {
         subtitle={`Évaluation des ratios N-P-K, pH et teneur hydrique — ${farm?.name ?? "Exploitation agricole"}`}
         actions={
           <div className="flex items-center gap-2">
-            {aiStatus?.has_openai_key ? (
+            {aiStatus?.has_gemini_key ? (
+              <Badge tone="success" className="py-1">
+                Google {aiStatus.text_model}
+              </Badge>
+            ) : aiStatus?.has_openai_key ? (
               <Badge tone="success" className="py-1">
                 OpenAI {aiStatus.text_model}
               </Badge>

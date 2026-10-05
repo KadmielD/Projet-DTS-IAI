@@ -6,6 +6,30 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Load .env file automatically (pure Python, zero dependencies)
+def _load_dotenv():
+    candidate_paths = [
+        Path(__file__).resolve().parent.parent / ".env",
+        Path(__file__).resolve().parent.parent.parent / ".env",
+    ]
+    for p in candidate_paths:
+        if p.exists():
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#") or "=" not in line:
+                            continue
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k and not os.getenv(k):
+                            os.environ[k] = v
+            except Exception:
+                pass
+
+_load_dotenv()
+
 # Load config.json if present
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config.json"
 app_config: Dict[str, Any] = {}
@@ -18,8 +42,13 @@ if CONFIG_PATH.exists():
 
 
 def get_openai_api_key() -> str:
-    """Retrieve OpenAI API key from environment variable or config.json."""
-    return os.getenv("OPENAI_API_KEY") or app_config.get("openai_api_key") or ""
+    """Retrieve OpenAI API key from environment variable, .env, or config.json."""
+    return (
+        os.getenv("OPENAI_API_KEY")
+        or os.getenv("OPEN_API_KEY")
+        or app_config.get("openai_api_key")
+        or ""
+    ).strip()
 
 
 def get_vision_model() -> str:
