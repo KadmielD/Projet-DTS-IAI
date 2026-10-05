@@ -5,6 +5,7 @@ import type { AiStatus, SoilAnalysis, SoilAnalysisAIResponse } from "@/types";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { Stepper } from "@/components/Feedback";
 import { Badge, Button, Card, Input, PageHeader } from "@/components/ui";
+import { Icons } from "@/components/icons";
 
 export default function AnalyseSolPage() {
   const [existing, setExisting] = useState<SoilAnalysis | null>(null);
@@ -14,6 +15,7 @@ export default function AnalyseSolPage() {
   const [p, setP] = useState("18");
   const [k, setK] = useState("22");
   const [humidity, setHumidity] = useState("34");
+  const [saved, setSaved] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<SoilAnalysisAIResponse | null>(null);
   const [aiStatus, setAiStatus] = useState<AiStatus | null>(null);
@@ -33,11 +35,8 @@ export default function AnalyseSolPage() {
     });
   }, []);
 
-  const farm = mockExploitations.find(
-    (e) => e.id === existing?.exploitationId,
-  );
-
-  const step = aiResult ? 3 : photoName ? 2 : 1;
+  const farm = mockExploitations.find((e) => e.id === existing?.exploitationId);
+  const step = aiResult || saved ? 3 : photoName ? 2 : 1;
 
   const runAnalysis = async () => {
     setAnalyzing(true);
@@ -51,12 +50,13 @@ export default function AnalyseSolPage() {
         culture: "Maïs",
       });
       setAiResult(res);
+      setSaved(true);
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const simulateFromPhoto = () => {
+  const simulateVision = () => {
     if (!photoName) return;
     setPh("6.4");
     setN("32");
@@ -66,11 +66,27 @@ export default function AnalyseSolPage() {
     runAnalysis();
   };
 
+  const phNum = parseFloat(ph) || 6.2;
+  const nNum = parseFloat(n) || 28;
+  const pNum = parseFloat(p) || 18;
+  const kNum = parseFloat(k) || 22;
+  const humNum = parseFloat(humidity) || 34;
+
+  const currentScore = aiResult
+    ? aiResult.fertilityScore
+    : Math.round(
+        (Math.max(0, 1 - Math.abs(phNum - 6.5) / 2.5) * 0.35 +
+          Math.min(nNum / 40, 1) * 0.25 +
+          Math.min(pNum / 30, 1) * 0.2 +
+          Math.min(kNum / 30, 1) * 0.2) *
+          100,
+      );
+
   return (
-    <div>
+    <div className="space-y-6 text-left">
       <PageHeader
-        title="Analyse physico-chimique du sol & fertilisation"
-        subtitle={`Évaluation des ratios N-P-K, pH et teneur hydrique — ${farm?.name ?? "Exploitation agricole"}`}
+        title="Analyse Physico-Chimique du Sol & Fertilisation"
+        subtitle={`Suivi des indicateurs N-P-K, acidité pH et humidité — ${farm?.name ?? "Ferme de Ndop"}`}
         actions={
           <div className="flex items-center gap-2">
             {aiStatus?.has_gemini_key ? (
@@ -91,125 +107,250 @@ export default function AnalyseSolPage() {
       />
 
       <Stepper
-        steps={["Échantillon photo", "Indicateurs NPK", "Bilan & Prescription"]}
+        steps={["Échantillon de terre", "Indicateurs NPK & pH", "Bilan & Prescription"]}
         current={step}
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <h2 className="font-semibold text-foreground">Échantillon de sol / Parcelle</h2>
-          <p className="mt-1 text-sm text-muted">
-            Téléversez une photo de votre prélèvement de sol pour une estimation visuelle de la texture.
-          </p>
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Left: Sample and Inputs */}
+        <div className="lg:col-span-6 space-y-4">
+          <Card className="text-left">
+            <div className="flex items-center justify-between mb-4 border-b border-border/60 pb-3">
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Icons.Flask className="w-5 h-5 text-emerald-800" />
+                <span>Prélèvement & échantillon de sol</span>
+              </h2>
+              <span className="text-xs text-muted">Terrain / Laboratoire</span>
+            </div>
 
-          <div className="mt-4">
             <PhotoUpload
-              label="Ajouter une photo de sol ou carottage"
-              hint="Format JPG/PNG — terre arable ou profil racinaire"
+              label="Photographier l'échantillon ou la coupe de terre"
+              hint="Permet d'estimer la texture du sol (limon, argile, sable) et l'humidité résiduelle."
               onChange={(f) => {
                 setPhotoName(f?.name ?? null);
                 setAiResult(null);
+                setSaved(false);
               }}
             />
-          </div>
-
-          <Button
-            className="mt-3 w-full"
-            variant="outline"
-            disabled={!photoName || analyzing}
-            onClick={simulateFromPhoto}
-          >
-            {analyzing ? "Estimation en cours…" : "Analyser la texture depuis la photo"}
-          </Button>
-
-          <div className="mt-6 border-t border-border pt-4">
-            <h2 className="font-semibold text-foreground">Saisie des indicateurs physico-chimiques</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Input label="pH (acidité/alcalinité)" value={ph} onChange={setPh} />
-              <Input label="Azote disponible (N - ppm)" value={n} onChange={setN} />
-              <Input label="Phosphore assimilable (P - ppm)" value={p} onChange={setP} />
-              <Input label="Potassium échangeable (K - ppm)" value={k} onChange={setK} />
-              <Input label="Humidité résiduelle (%)" value={humidity} onChange={setHumidity} />
-            </div>
 
             <Button
-              className="mt-4 w-full text-base font-semibold"
-              disabled={analyzing}
-              onClick={runAnalysis}
+              className="mt-3 w-full"
+              variant="secondary"
+              size="sm"
+              disabled={!photoName || analyzing}
+              onClick={simulateVision}
+              icon={<Icons.Sparkles className="w-4 h-4 text-emerald-700" />}
             >
-              {analyzing ? "Calcul agronomique en cours…" : "Générer la prescription agronomique"}
+              {analyzing ? "Estimation par Vision IA…" : "Estimer les indicateurs par Vision IA"}
             </Button>
-          </div>
-        </Card>
 
-        <Card>
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-foreground">Bilan de fertilité & recommandations</h2>
-            {aiResult && (
-              <Badge tone={aiResult.source === "openai" ? "success" : "info"}>
-                {aiResult.source === "openai" ? "Généré par OpenAI" : "Modèle Agronomique"}
-              </Badge>
-            )}
-          </div>
+            <div className="mt-6 pt-4 border-t border-border/60">
+              <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                <Icons.Soil className="w-4 h-4 text-amber-700" />
+                <span>Valeurs mesurées ou saisies</span>
+              </h3>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge tone="info">pH : {ph}</Badge>
-            <Badge tone="success">N : {n} ppm</Badge>
-            <Badge tone="success">P : {p} ppm</Badge>
-            <Badge tone="success">K : {k} ppm</Badge>
-            <Badge tone="warning">Humidité : {humidity}%</Badge>
-            {photoName && <Badge className="text-xs">Photo : {photoName}</Badge>}
-          </div>
-
-          {aiResult ? (
-            <div className="mt-6 space-y-4">
-              <div className="rounded-xl border border-border/80 bg-background/50 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted">Indice global de fertilité</span>
-                  <span className="text-2xl font-bold text-primary">{aiResult.fertilityScore} / 100</span>
-                </div>
-                <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-border">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${aiResult.fertilityScore}%` }}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  label="Acidité pH"
+                  value={ph}
+                  onChange={setPh}
+                  placeholder="6.0 - 7.0"
+                  hint="Idéal : 6.2 - 6.8"
+                />
+                <Input
+                  label="Azote N (mg/kg)"
+                  value={n}
+                  onChange={setN}
+                  placeholder="20 - 40"
+                  hint="Favorise la biomasse"
+                />
+                <Input
+                  label="Phosphore P (mg/kg)"
+                  value={p}
+                  onChange={setP}
+                  placeholder="15 - 30"
+                  hint="Développement racinaire"
+                />
+                <Input
+                  label="Potassium K (mg/kg)"
+                  value={k}
+                  onChange={setK}
+                  placeholder="18 - 35"
+                  hint="Résistance et floraison"
+                />
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Taux d'humidité (%)"
+                    value={humidity}
+                    onChange={setHumidity}
+                    placeholder="25 - 45"
+                    hint="Réserve utile du sol"
                   />
                 </div>
-                <p className="mt-2 text-sm font-semibold text-foreground">
-                  Diagnostic : <span className="text-primary">{aiResult.soilQuality}</span>
-                </p>
               </div>
 
+              <div className="mt-5 flex items-center justify-between gap-3">
+                <Button
+                  onClick={runAnalysis}
+                  disabled={analyzing}
+                  icon={analyzing ? <Icons.RefreshCw className="w-4 h-4 animate-spin" /> : <Icons.Check className="w-4 h-4" />}
+                >
+                  {analyzing ? "Calcul IA en cours…" : "Générer la prescription IA"}
+                </Button>
+
+                {saved ? (
+                  <span className="text-xs font-semibold text-emerald-800 flex items-center gap-1">
+                    <Icons.Check className="w-3.5 h-3.5" /> Enregistré dans le registre
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right: Nutrient Meters & Recommendations */}
+        <div className="lg:col-span-6 space-y-4">
+          <Card className="h-full flex flex-col justify-between">
+            <div className="space-y-6">
+              {/* Fertility Score Card */}
+              <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 via-surface to-emerald-50/50 p-5 dark:bg-emerald-950/20 dark:border-emerald-800/60">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
+                      Indice Global de Fertilité
+                    </span>
+                    <h3 className="text-2xl font-black text-foreground mt-0.5">
+                      {currentScore} / 100
+                    </h3>
+                    <p className="text-xs text-muted mt-1">
+                      {aiResult?.soilQuality || "Sol limono-argileux fertile · Excellent potentiel céréalier"}
+                    </p>
+                  </div>
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-800 text-white font-black text-lg shadow-md">
+                    {currentScore >= 80 ? "A+" : currentScore >= 65 ? "A" : "B"}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge tone="info">pH {ph}</Badge>
+                  <Badge tone="success">N {n} mg/kg</Badge>
+                  <Badge tone="success">P {p} mg/kg</Badge>
+                  <Badge tone="success">K {k} mg/kg</Badge>
+                  <Badge tone="warning">Humidité {humidity}%</Badge>
+                  {aiResult && (
+                    <Badge tone="success">
+                      {aiResult.source?.includes("gemini")
+                        ? "Google Gemini"
+                        : aiResult.source?.includes("openai")
+                          ? "OpenAI"
+                          : "IA Agronomique"}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Visual Nutrient Gauges */}
+              <div className="space-y-3.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                  <Icons.Stats className="w-4 h-4 text-emerald-800" />
+                  Jauges de nutriments par rapport au seuil agronomique :
+                </h4>
+
+                {/* pH Gauge */}
+                <div className="rounded-xl border border-border/70 bg-surface-subtle/50 p-3 space-y-1.5">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>pH Sol ({ph})</span>
+                    <span className="text-emerald-800 font-bold">
+                      {phNum >= 6.0 && phNum <= 7.2 ? "Zone Neutre Optimale" : phNum < 6.0 ? "Sol Acide" : "Sol Basique"}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden dark:bg-slate-800">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (phNum / 14) * 100 * 1.4)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Azote N */}
+                <div className="rounded-xl border border-border/70 bg-surface-subtle/50 p-3 space-y-1.5">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Azote disponible N ({n} mg/kg)</span>
+                    <span className="text-emerald-800 font-bold">
+                      {nNum >= 25 ? "Bien Pourvu" : "Déficit modéré"}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden dark:bg-slate-800">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (nNum / 50) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Phosphore P */}
+                <div className="rounded-xl border border-border/70 bg-surface-subtle/50 p-3 space-y-1.5">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Phosphore assimilable P ({p} mg/kg)</span>
+                    <span className="text-emerald-800 font-bold">
+                      {pNum >= 18 ? "Optimal" : "Carence à combler"}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden dark:bg-slate-800">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (pNum / 40) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Potassium K */}
+                <div className="rounded-xl border border-border/70 bg-surface-subtle/50 p-3 space-y-1.5">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Potassium échangeable K ({k} mg/kg)</span>
+                    <span className="text-emerald-800 font-bold">
+                      {kNum >= 20 ? "Favorable" : "Apport conseillé"}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden dark:bg-slate-800">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, (kNum / 40) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations list */}
               <div>
-                <h3 className="text-sm font-semibold text-foreground">Actions correctives recommandées :</h3>
-                <ul className="mt-2 space-y-2 text-sm text-foreground/90">
-                  {aiResult.recommendations.map((r, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5">
-                      <span className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">
-                        {idx + 1}
-                      </span>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-2.5">
+                  Recommandations d&apos;amendement & fertilisation :
+                </h4>
+                <ul className="space-y-2">
+                  {(aiResult?.recommendations ?? existing?.recommendations ?? [
+                    "Sol équilibré pour le maïs. Apport de 15 t/ha de fumier composté au labour.",
+                    "Fractionner les apports d'urée pour limiter le lessivage lors des épisodes de pluie.",
+                    "Maintenir un paillage organique pour préserver l'humidité de surface à 35%.",
+                  ]).map((r) => (
+                    <li
+                      key={r}
+                      className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-surface-subtle/40 p-2.5 text-xs text-foreground leading-relaxed"
+                    >
+                      <Icons.Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
                       <span>{r}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
-          ) : (
-            <div className="mt-8">
-              <p className="text-sm font-medium text-foreground">Prescriptions antérieures enregistrées :</p>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted">
-                {(existing?.recommendations ?? [
-                  "Maintenir un paillage organique pour protéger la structure du sol",
-                  "Apporter un engrais ternaire équilibré au tallage",
-                ]).map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-              <p className="mt-6 text-xs text-muted">
-                Ajustez les valeurs NPK à gauche et cliquez sur « Générer la prescription agronomique » pour obtenir un bilan actualisé.
-              </p>
+
+            <div className="mt-6 pt-4 border-t border-border/60 text-xs text-muted flex items-center justify-between">
+              <span>Dernière mise à jour : {existing?.date ?? "Aujourd'hui"}</span>
+              <span className="text-emerald-800 font-medium">Cycle cultural 2026</span>
             </div>
-          )}
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
   );
